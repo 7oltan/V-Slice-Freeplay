@@ -34,9 +34,11 @@ function postCreate() {
 	for(icon in iconArray)
 		remove(icon);
 
+	//left bg
 	triangle = new FlxSprite().loadGraphic(Paths.image('freeplay/triangle'));
 	add(triangle);
 	
+	//right bg
 	bgDad = new FlxSprite(triangle.width * 0.74, 0).loadGraphic(Paths.image('freeplay/bg'));
 	bgDad.setGraphicSize(0, FlxG.height);
 	bgDad.updateHitbox();
@@ -48,6 +50,7 @@ function postCreate() {
 	dj.antialiasing = true;
 	add(dj);
 
+	//capsules
 	for(song in songs){
 		var capsuleGroup:FlxSpriteGroup = new FlxSpriteGroup(400,songs.indexOf(song)*100);
 		add(capsuleGroup);
@@ -59,9 +62,6 @@ function postCreate() {
 		capsule.animation.play('selected');
 		capsule.scale.set(realScaled,realScaled);
 		capsuleGroup.add(capsule);
-
-		/*var text:FlxText = new FlxText(160,45,0,song.displayName,20);
-		capsuleGroup.add(text);*/
 
         var titleTextBlur = new FlxText(capsule.width * 0.26, 45,0, song.displayName, Std.int(40 * realScaled));
         titleTextBlur.font = "5by7";
@@ -80,6 +80,8 @@ function postCreate() {
 		capsules.push(capsuleGroup);
 	}
 
+
+	//bar
     blackBar = new FlxSprite().makeGraphic(FlxG.width, 64, 0xFF000000);
     add(blackBar);
         
@@ -92,9 +94,12 @@ function postCreate() {
 
 	freeplayText.font = ostName.font = 'VCR OSD Mono';
 
+	//intro
+
 	intro();
 }
 
+//gets an item from a capsule
 function getItemFromCapsule(capsule,itemName){
 	if(capsule != null){
 		switch(itemName){
@@ -109,11 +114,13 @@ function getItemFromCapsule(capsule,itemName){
 	return null;
 }
 
+//made it a function for the offsets
 function djPlayAnim(name,offsetX,offsetY){
 	dj.anim.play(name,true);
 	dj.offset.set(offsetX,offsetY);
 }
 
+//intro
 function intro(){
 	//bf
 	djPlayAnim("boyfriend dj intro",6.7,2.6);
@@ -126,24 +133,16 @@ function intro(){
 
 	//bg dad
 	bgDad.color = 0xFF000000;
-	var ogbgDadX = bgDad.x;//sillies
 	bgDad.x = FlxG.width;
-	FlxTween.tween(bgDad,{x:ogbgDadX},0.7,{ease: FlxEase.quintOut});
+	FlxTween.tween(bgDad,{x:triangle.width * 0.74},0.7,{ease: FlxEase.quintOut});
 
 	//yellow/pink triangle
-	//IMPROVE-NOTE change this to be less lines, you can do it idiot
-	//removes all color
-	triangle.colorTransform.redMultiplier = 0;
-	triangle.colorTransform.greenMultiplier = 0;
-	triangle.colorTransform.blueMultiplier = 0;
-	//set the color to pink by rgb
-	triangle.colorTransform.redOffset = 255;
-	triangle.colorTransform.greenOffset = 212;
-	triangle.colorTransform.blueOffset = 233;
+	triangle.setColorTransform(0,0,0,1,255,212,233);//makes a pink color effect
 	triangle.x -= triangle.width;
 	FlxTween.tween(triangle,{x:0},0.6,{ease: FlxEase.quartOut});
 }
 
+//when the dj character finishs its intro
 function onIdleStart(){
 	//black bar stuff
 	freeplayText.visible = ostName.visible = true;
@@ -161,6 +160,8 @@ function onIdleStart(){
 }
 
 function update(){
+
+	//on animation end code for texture atlases, its broken for some reason in flxAnimate so i remade it
 	if(dj.anim.curFrame >= dj.anim.length - 1){//flxanimate sucks,i cant set the loop type https://github.com/FNF-CNE-Devs/flxanimate/blob/5be6822b5262230e19c975d50c8a1e2e44be10ba/flxanimate/animate/FlxAnim.hx#L189C11-L189C19
 		if(dj.anim.curSymbol.name == "boyfriend dj intro"){
 			djPlayAnim('Boyfriend DJ',0,0);
@@ -168,8 +169,12 @@ function update(){
 			onIdleStart();
 		}
 	}
+
+	//debug key
 	if(FlxG.keys.justPressed.I)
 		intro();
+
+	//updates the lerp for the capsules
 	for(capsule in capsules){
 		var targetIndex = (capsules.indexOf(capsule)-curSelected)+1/**???**/;
 		var targetY = (targetIndex * ((capsule.height * realScaled) + 10)) + 120;
@@ -181,6 +186,7 @@ function update(){
 	}
 }
 
+//adds a timer before loading the song
 var alreadCanceledSelect = false;
 function onSelect(event){
 	if(!alreadCanceledSelect){
@@ -195,13 +201,9 @@ function onSelect(event){
 		});
 	}
 }
-function onUpdateOptionsAlpha(event){
-	event.cancel();
-	
-	for (i=>item in grpSongs.members)
-		item.targetY = i - curSelected;
-}
 
+
+//on change selection, event called by the freeplay by auto
 function onChangeSelection(event){
 	for(capsule in capsules){
 		if(event.value == capsules.indexOf(capsule)){
