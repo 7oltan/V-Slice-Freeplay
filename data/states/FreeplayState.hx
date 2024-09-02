@@ -22,6 +22,9 @@ var triangle;
 var bgDad:FlxSprite;
 var freeplayText:FlxText;
 var ostName:FlxText;
+var leftArrow;
+var rightArrow;
+var difficulties;
 
 function postCreate() {
 	//remove EVERYTHING
@@ -42,6 +45,7 @@ function postCreate() {
 	bgDad = new FlxSprite(triangle.width * 0.74, 0).loadGraphic(Paths.image('freeplay/bg'));
 	bgDad.setGraphicSize(0, FlxG.height);
 	bgDad.updateHitbox();
+	bgDad.antialiasing = true;
 	add(bgDad);
 	
 	//DJ CODE, NOTE ITS NAMED "DJ" NOT BOYFRIEND BC IT CHANGES BETWEEN PICO AND BF 
@@ -94,8 +98,34 @@ function postCreate() {
 
 	freeplayText.font = ostName.font = 'VCR OSD Mono';
 
-	//intro
+	//difficultySelector
 
+	difficulties = new FlxSpriteGroup(90,80);
+	add(difficulties);
+
+	for(diff in ['easy','normal','hard']){//IMPROVE-NOTE make default difficulty and custom difficulties
+		var difficulty = new FlxSprite(0,0).loadGraphic(Paths.image('freeplay/difficulties/'+diff));
+		difficulty.visible = false;
+		difficulties.add(difficulty);
+	}
+	if(difficulties.members[curDifficulty] != null)
+		difficulties.members[curDifficulty].visible = true;
+
+	leftArrow = new FlxSprite(20,70);
+	add(leftArrow);
+
+	rightArrow = new FlxSprite(325,70);
+	rightArrow.flipX = true;
+	add(rightArrow);
+
+	for(arrow in [leftArrow,rightArrow]){//adds the spritesheet and the animations at the same time
+		arrow.frames = Paths.getSparrowAtlas('freeplay/arrow');
+		arrow.animation.addByPrefix('shine', 'arrow pointer loop', 24);
+		arrow.animation.play('shine');
+	}
+
+
+	//intro
 	intro();
 }
 
@@ -140,6 +170,10 @@ function intro(){
 	triangle.setColorTransform(0,0,0,1,255,212,233);//makes a pink color effect
 	triangle.x -= triangle.width;
 	FlxTween.tween(triangle,{x:0},0.6,{ease: FlxEase.quartOut});
+
+	//difficultySelector
+	difficulties.x = -300;
+	leftArrow.visible = rightArrow.visible = false;
 }
 
 //when the dj character finishs its intro
@@ -157,6 +191,10 @@ function onIdleStart(){
 
 	//bg dad stuff
 	bgDad.color = 0xFFFFFFFF;
+	
+	//difficultySelector
+	FlxTween.tween(difficulties, {x: 90}, 0.6, {ease: FlxEase.quartOut});
+	leftArrow.visible = rightArrow.visible = true;
 }
 
 function update(){
@@ -217,6 +255,47 @@ function onChangeSelection(event){
 			getItemFromCapsule(capsule,'textBlur').visible = false;
 			getItemFromCapsule(capsule,'text').alpha = 0.6;
 			getItemFromCapsule(capsule,'capsule').offset.x = -5;
+		}
+	}
+}
+
+function hitArrow(arrow){
+	arrow.offset.y = -5;
+
+	arrow.colorTransform.color = 0xFFFFFFFF;
+
+	arrow.scale.set(0.5,0.5);
+
+	new FlxTimer().start(2 / 24, function(tmr) {
+		arrow.offset.y = 0;
+	  arrow.scale.set(1,1);
+	  arrow.setColorTransform();
+	});
+}
+
+//on change difficulty, event called by the freeplay by auto
+function onChangeDiff(event){
+	if(event.change == 0) return;
+
+	CoolUtil.playMenuSFX(0/**SELECT**/, 0.7);
+
+	switch(event.change){
+		case -1:
+			hitArrow(leftArrow);
+		case 1:
+			hitArrow(rightArrow);
+	}
+
+	for(difficulty in difficulties.members){
+		difficulty.visible = false;
+		if(difficulties.members.indexOf(difficulty) == event.value){
+			difficulty.visible = true;
+			difficulty.offset.y += 5;
+			difficulty.alpha = 0.5;
+			new FlxTimer().start(1 / 24, function(swag) {
+				difficulty.alpha = 1;
+				difficulty.updateHitbox();
+			});
 		}
 	}
 }
