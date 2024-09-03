@@ -85,13 +85,14 @@ function postCreate() {
 	//random button
 	songs.unshift({
 		name:'random',
-		displayName:'random',
+		displayName:'Random',
 		bpm:100,
 		beatsPerMeasure:4,
 		stepsPerBeat:4,
 		needVoices:false,
-		icon:'face',
+		icon:'bf',
 		color: 0xFFFFFFFF,
+		parsedColor: 0xFFFFFFFF,
 		difficulties:['easy','hard','normal'],
 		coopAllowed:false,
 		opponentModeAllowed:false
@@ -99,7 +100,7 @@ function postCreate() {
 
 	//capsules
 	for(song in songs){
-		var capsuleGroup:FlxSpriteGroup = new FlxSpriteGroup(400,songs.indexOf(song)*100);
+		var capsuleGroup:FlxSpriteGroup = new FlxSpriteGroup();
 		add(capsuleGroup);
 
 		var capsule:FlxSprite = new FlxSprite(0,0);
@@ -107,6 +108,7 @@ function postCreate() {
 		capsule.animation.addByPrefix('selected', 'mp3 capsule w backing0', 24);
 		capsule.animation.addByPrefix('unselected', 'mp3 capsule w backing NOT SELECTED', 24);	
 		capsule.animation.play('selected');
+		capsule.antialiasing = true;
 		capsule.scale.set(realScaled,realScaled);
 		capsuleGroup.add(capsule);
 
@@ -123,6 +125,17 @@ function postCreate() {
             new GlowFilter(0x00ccff, 1, 5, 5, 210, 2/*BitmapFilterQuality.MEDIUM*/),
           ];
         capsuleGroup.add(text);
+
+		var pixelIcon = new FlxSprite(160, 35).loadGraphic(Paths.image('freeplay/icons/'+song.icon));
+		pixelIcon.scale.x = pixelIcon.scale.y = 2;
+		pixelIcon.antialiasing = false;
+		pixelIcon.active = false;
+        pixelIcon.origin.x = song.icon == 'parents-christmas' ? 140 : 100;
+		pixelIcon.visible = song.name != 'random';//hide it DONT remove it
+		capsuleGroup.add(pixelIcon);
+
+		capsuleGroup.x = getCapsuleIntendedX(songs.indexOf(song)+1);
+		capsuleGroup.y = getCapsuleIntendedY(songs.indexOf(song)+1,capsule);
 
 		capsules.push(capsuleGroup);
 	}
@@ -151,8 +164,7 @@ function postCreate() {
 		difficulty.visible = false;
 		difficulties.add(difficulty);
 	}
-	if(difficulties.members[curDifficulty] != null)
-		difficulties.members[curDifficulty].visible = true;
+	
 
 	leftArrow = new FlxSprite(20,70);
 	add(leftArrow);
@@ -170,6 +182,9 @@ function postCreate() {
 
 	//intro
 	intro();
+	//to update the stuff
+	changeSelection(0,true);
+	changeDiff(0,true);
 }
 
 //gets an item from a capsule
@@ -218,6 +233,10 @@ function intro(){
 	//difficultySelector
 	difficulties.x = -300;
 	leftArrow.visible = rightArrow.visible = false;
+
+	//capsules
+	for(capsule in capsules)
+		capsule.setPosition(2000,-4000);
 }
 
 //when the dj character finishs its intro
@@ -273,7 +292,7 @@ function update(){
 		var targetX = 270 + (60 * (Math.sin(targetIndex)));
 
 		capsule.y = CoolUtil.fpsLerp(capsule.y,targetY,0.4);
-		capsule.x =  CoolUtil.fpsLerp(capsule.x,targetX,0.4);
+		capsule.x =  CoolUtil.fpsLerp(capsule.x,targetX,0.3);
 	}
 }
 
@@ -334,9 +353,8 @@ function hitArrow(arrow){
 
 //on change difficulty, event called by the freeplay by auto
 function onChangeDiff(event){
-	if(event.change == 0) return;
-
-	CoolUtil.playMenuSFX(0/**SELECT**/, 0.7);
+	if(event.change != 0)
+		CoolUtil.playMenuSFX(0/**SELECT**/, 0.7);
 
 	switch(event.change){
 		case -1:
