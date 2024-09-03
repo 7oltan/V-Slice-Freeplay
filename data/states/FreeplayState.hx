@@ -134,9 +134,6 @@ function postCreate() {
 		pixelIcon.visible = song.name != 'random';//hide it DONT remove it
 		capsuleGroup.add(pixelIcon);
 
-		capsuleGroup.x = getCapsuleIntendedX(songs.indexOf(song)+1);
-		capsuleGroup.y = getCapsuleIntendedY(songs.indexOf(song)+1,capsule);
-
 		capsules.push(capsuleGroup);
 	}
 
@@ -366,13 +363,16 @@ function onChangeDiff(event){
 	for(difficulty in difficulties.members){
 		difficulty.visible = false;
 		if(difficulties.members.indexOf(difficulty) == event.value){
-			difficulty.visible = true;
-			difficulty.offset.y += 5;
-			difficulty.alpha = 0.5;
-			new FlxTimer().start(1 / 24, function(swag) {
-				difficulty.alpha = 1;
-				difficulty.updateHitbox();
-			});
+			if(event.change != 0){
+				difficulty.visible = true;
+				difficulty.offset.y += 5;
+				difficulty.alpha = 0.5;
+				new FlxTimer().start(1 / 24, function(swag) {
+					difficulty.alpha = 1;
+					difficulty.updateHitbox();
+				});
+			}else
+				difficulty.visible = true;
 		}
 	}
 }
