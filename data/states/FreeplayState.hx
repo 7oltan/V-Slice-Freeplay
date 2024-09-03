@@ -13,6 +13,7 @@ import flixel.FlxText;
 import flixel.FlxG;
 import openfl.filters.GlowFilter;
 import funkin.backend.shaders.CustomShader;
+import openfl.display.BlendMode;
 
 var dj;
 var capsules:Array<FlxSpriteGroup> = [];
@@ -25,6 +26,8 @@ var ostName:FlxText;
 var leftArrow;
 var rightArrow;
 var difficulties;
+var triangleGlow;
+var triangleText;
 
 function postCreate() {
 	//remove EVERYTHING
@@ -40,6 +43,15 @@ function postCreate() {
 	//left bg
 	triangle = new FlxSprite().loadGraphic(Paths.image('freeplay/triangle'));
 	add(triangle);
+
+	triangleText = new FlxAnimate(00,0,Path.withoutExtension(Paths.image('freeplay/triangle')));//IMPROVE-NOTE use better path 
+	triangleText.anim.play('BOYFRIEND ch backing');
+	add(triangleText);
+	
+    triangleGlow = new FlxSprite(-30, -30).loadGraphic(Paths.image('freeplay/triangleGlow'));
+    triangleGlow.blend = BlendMode.ADD;
+    triangleGlow.alpha = 0;
+    add(triangleGlow);
 	
 	//right bg
 	bgDad = new FlxSprite(triangle.width * 0.74, 0).loadGraphic(Paths.image('freeplay/bg'));
@@ -170,6 +182,7 @@ function intro(){
 	triangle.setColorTransform(0,0,0,1,255,212,233);//makes a pink color effect
 	triangle.x -= triangle.width;
 	FlxTween.tween(triangle,{x:0},0.6,{ease: FlxEase.quartOut});
+	triangleText.visible = false;
 
 	//difficultySelector
 	difficulties.x = -300;
@@ -188,6 +201,11 @@ function onIdleStart(){
 
 	//triangle stuff
 	triangle.setColorTransform();//removes the color effect
+	
+	triangleGlow.alpha = 1;
+	FlxTween.tween(triangleGlow, {alpha: 0, "scale.x": 1.2, "scale.y": 1.2}, 0.45, {ease: FlxEase.sineOut});
+
+	triangleText.visible = true;
 
 	//bg dad stuff
 	bgDad.color = 0xFFFFFFFF;
