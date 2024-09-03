@@ -82,6 +82,21 @@ function postCreate() {
 	dj.antialiasing = true;
 	add(dj);
 
+	//random button
+	songs.unshift({
+		name:'random',
+		displayName:'random',
+		bpm:100,
+		beatsPerMeasure:4,
+		stepsPerBeat:4,
+		needVoices:false,
+		icon:'face',
+		color: 0xFFFFFFFF,
+		difficulties:['easy','hard','normal'],
+		coopAllowed:false,
+		opponentModeAllowed:false
+	});
+
 	//capsules
 	for(song in songs){
 		var capsuleGroup:FlxSpriteGroup = new FlxSpriteGroup(400,songs.indexOf(song)*100);
@@ -265,16 +280,22 @@ function update(){
 //adds a timer before loading the song
 var alreadCanceledSelect = false;
 function onSelect(event){
-	if(!alreadCanceledSelect){
-		event.cancel();
-		alreadCanceledSelect = true;
+	if(songs[curSelected].name != 'random'){
+		if(!alreadCanceledSelect){
+			event.cancel();
+			alreadCanceledSelect = true;
 
-		dj.anim.play('Boyfriend DJ confirm');
-		CoolUtil.playMenuSFX(1/**ACCEPT**/, 0.7);
+			dj.anim.play('Boyfriend DJ confirm');
+			CoolUtil.playMenuSFX(1/**ACCEPT**/, 0.7);
 
-		new FlxTimer().start(1.0,function(_){
-			select();
-		});
+			new FlxTimer().start(1.0,function(_){
+				select();
+			});
+		}
+	}else{
+		curSelected = FlxG.random.int(0,songs.length-1,0);//exclude 0 cuz thats random
+		changeSelection(0,true);
+		select();
 	}
 }
 
@@ -336,4 +357,11 @@ function onChangeDiff(event){
 			});
 		}
 	}
+}
+
+//only solution babe
+function onUpdateOptionsAlpha(event){
+	event.cancel();
+	for (i=>item in grpSongs.members)
+			item.targetY = i - curSelected;
 }
