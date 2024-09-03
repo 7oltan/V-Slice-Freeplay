@@ -30,6 +30,8 @@ var triangleGlow;
 var triangleText;
 var triangleBeat;
 var triangleBeatDark;
+var beatTween;
+var beatDarkTween;
 
 function postCreate() {
 	//remove EVERYTHING
@@ -220,10 +222,6 @@ function onIdleStart(){
 	FlxTween.tween(triangleGlow, {alpha: 0, "scale.x": 1.2, "scale.y": 1.2}, 0.45, {ease: FlxEase.sineOut});
 
 	triangleText.visible = triangleBeat.visible  = triangleBeatDark.visible  = true;
-	
-	//ik im not supposed to add shit like this here but.....
-	FlxTween.tween(triangleBeatDark,{alpha:0.6},0.375,{startDelay:0.2,type:2,loopDelay:0.20833333333,onComplete:function(_)triangleBeatDark.alpha = 0});
-	FlxTween.tween(triangleBeat,{alpha:0},0.33333333333,{startDelay:0.2,type:2,loopDelay:0.25,onComplete:function(_)triangleBeat.alpha = 1});
 
 	//bg dad stuff
 	bgDad.color = 0xFFFFFFFF;
@@ -241,6 +239,10 @@ function update(){
 			djPlayAnim('Boyfriend DJ',0,0);
 
 			onIdleStart();
+		}
+		if(dj.anim.curSymbol.name == 'Boyfriend DJ'){//so it syncs the beats with the idle
+			beatDarkTween = FlxTween.tween(triangleBeatDark,{alpha:0.6},0.375,{startDelay:7/24,onComplete:function(_)triangleBeatDark.alpha = 0});
+			beatTween = FlxTween.tween(triangleBeat,{alpha:0},0.33333333333,{startDelay:7/24,onComplete:function(_)triangleBeat.alpha = 1});
 		}
 	}
 
