@@ -28,6 +28,8 @@ var rightArrow;
 var difficulties;
 var triangleGlow;
 var triangleText;
+var triangleBeat;
+var triangleBeatDark;
 
 function postCreate() {
 	//remove EVERYTHING
@@ -43,11 +45,23 @@ function postCreate() {
 	//left bg
 	triangle = new FlxSprite().loadGraphic(Paths.image('freeplay/triangle'));
 	add(triangle);
+	
 
 	triangleText = new FlxAnimate(00,0,Path.withoutExtension(Paths.image('freeplay/triangle')));//IMPROVE-NOTE use better path 
 	triangleText.anim.play('BOYFRIEND ch backing');
 	add(triangleText);
 	
+	triangleBeatDark = new FlxSprite(0,381).loadGraphic(Paths.image('freeplay/beatdark'));
+	triangleBeatDark.blend = BlendMode.MULTIPLY;
+	triangleBeatDark.x = (triangle.width-200)/2-triangleBeatDark.width/2;
+	triangleBeatDark.alpha = 0;
+	add(triangleBeatDark);
+
+	triangleBeat = new FlxSprite(0,326).loadGraphic(Paths.image('freeplay/beatglow'));
+	triangleBeat.blend = BlendMode.ADD;
+	triangleBeat.x = (triangle.width-200)/2-triangleBeat.width/2;
+	add(triangleBeat);
+
     triangleGlow = new FlxSprite(-30, -30).loadGraphic(Paths.image('freeplay/triangleGlow'));
     triangleGlow.blend = BlendMode.ADD;
     triangleGlow.alpha = 0;
@@ -182,7 +196,7 @@ function intro(){
 	triangle.setColorTransform(0,0,0,1,255,212,233);//makes a pink color effect
 	triangle.x -= triangle.width;
 	FlxTween.tween(triangle,{x:0},0.6,{ease: FlxEase.quartOut});
-	triangleText.visible = false;
+	triangleText.visible = triangleBeat.visible = triangleBeatDark.visible = false;
 
 	//difficultySelector
 	difficulties.x = -300;
@@ -205,7 +219,11 @@ function onIdleStart(){
 	triangleGlow.alpha = 1;
 	FlxTween.tween(triangleGlow, {alpha: 0, "scale.x": 1.2, "scale.y": 1.2}, 0.45, {ease: FlxEase.sineOut});
 
-	triangleText.visible = true;
+	triangleText.visible = triangleBeat.visible  = triangleBeatDark.visible  = true;
+	
+	//ik im not supposed to add shit like this here but.....
+	FlxTween.tween(triangleBeatDark,{alpha:0.6},0.375,{startDelay:0.2,type:2,loopDelay:0.20833333333,onComplete:function(_)triangleBeatDark.alpha = 0});
+	FlxTween.tween(triangleBeat,{alpha:0},0.33333333333,{startDelay:0.2,type:2,loopDelay:0.25,onComplete:function(_)triangleBeat.alpha = 1});
 
 	//bg dad stuff
 	bgDad.color = 0xFFFFFFFF;
